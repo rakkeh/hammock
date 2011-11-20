@@ -1824,7 +1824,7 @@ namespace Hammock
                 return;
             }
 
-            var wasStreaming = response.Content.Equals("END STREAMING");
+            var wasStreaming = (response.Content != null && response.Content.Equals("END STREAMING"));
 
             if (callback != null && !wasStreaming)
             {
@@ -1841,7 +1841,7 @@ namespace Hammock
                 return;
             }
 
-            var wasStreaming = response.Content.Equals("END STREAMING");
+            var wasStreaming = (response.Content != null && response.Content.Equals("END STREAMING"));
 
             if (callback != null && !wasStreaming)
             {

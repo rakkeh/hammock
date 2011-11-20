@@ -796,15 +796,10 @@ namespace Hammock.Web
         protected void HandleWebException(WebException exception)
         {
             Stream stream = null;
+            Stream emptyStream = new MemoryStream(new byte[] { });
+                
             if (exception.Response is HttpWebResponse)
             {
-
-#if WindowsPhone
-                // This is probably a timeOut
-                Stream emptyStream = new MemoryStream(new byte[] { });
-                var args = new WebQueryResponseEventArgs(emptyStream, exception);
-                OnQueryResponse(args);
-#endif
                 var response = exception.Response;
 #if SILVERLIGHT
                 if (DecompressionMethods == Silverlight.Compat.DecompressionMethods.GZip ||
