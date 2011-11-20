@@ -57,7 +57,7 @@ namespace Hammock.Silverlight.Compat
 #else
             byte[] marker;
             responseStream = ReadIntoMemoryStream(responseStream, out marker);
-            if (marker.Length > 2 && (marker[0] == 31 && marker[1] == 139))
+            if (marker.Length > 1 && (marker[0] == 31 && marker[1] == 139))
             {
                 compressed = new GZipInputStream(responseStream);
             }

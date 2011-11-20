@@ -528,15 +528,20 @@ namespace Hammock
             return request.DecompressionMethods ?? DecompressionMethods;
         }
 
-        private WebMethod GetWebMethod(RestBase request)
+        private WebMethod GetWebMethod(RestRequest request)
         {
-            var method = !request.Method.HasValue
-                             ? !Method.HasValue
-                                   ? WebMethod.Get
-                                   : Method.Value
-                             : request.Method.Value;
-
-            return method;
+            if (request.Method.HasValue)
+            {
+                // Request settings take precedence over all.
+                return request.Method.Value;
+            }
+            if (Method.HasValue)
+            {
+                // The request does not specify the method - take the default specified on the client.
+                // Except, when the default is other than Post or Put and the request has an entity, in which case return the Post method.
+                return (request.Entity == null || Method.Value == WebMethod.Put || Method.Value == WebMethod.Post) ? Method.Value : WebMethod.Post;
+            }
+            return request.Entity == null ? WebMethod.Get : WebMethod.Post;
         }
 
         private byte[] GetPostContent(RestBase request)
@@ -2621,7 +2626,12 @@ namespace Hammock
 #if !SILVERLIGHT
             query.FollowRedirects = GetFollowRedirects(request);
 #endif
-            SerializeEntityBody(query, request);
+            query.Entity = SerializeEntityBody(request);
+
+            // [MK]: Serializer may modify the request headers, because they are part of the HTTP payload. Hence, move
+            // the header population after the entity body is serialized.
+            query.Headers.AddRange(Headers);
+            query.Headers.AddRange(request.Headers);
         }
 
         // [DC]: Trump duplicates by request over client over info values
@@ -2629,32 +2639,35 @@ namespace Hammock
         {
             var parameters = new WebPairCollection(values.SelectMany(value => value));
 
+            // [NvE] second facet not added due to if(target[pair.Name] == null); get names upfront
+            string[] exists = target.Names.ToArray();
+
             foreach (var pair in parameters)
             {
-                if(target[pair.Name] == null)
+                if (!exists.Contains(pair.Name))
                 {
                     target.Add(pair);
                 }
             }
         }
 
-        private void SerializeEntityBody(WebQuery query, RestRequest request)
+        private WebEntity SerializeEntityBody(RestRequest request)
         {
             var serializer = GetSerializer(request);
             if (serializer == null)
             {
                 // No suitable serializer for entity
-                return;
+                return null;
             }
 
             if (request.Entity == null || request.RequestEntityType == null)
             {
                 // Not enough information to serialize
-                return;
+                return null;
             }
 
             var entityBody = serializer.Serialize(request.Entity, request.RequestEntityType);
-            query.Entity = !entityBody.IsNullOrBlank()
+            return !entityBody.IsNullOrBlank()
                                ? new WebEntity
                                      {
                                          Content = entityBody,
@@ -2684,7 +2697,7 @@ namespace Hammock
             return entity;
         }
 
-        public WebQuery GetQueryFor(RestBase request, Uri uri)
+        public WebQuery GetQueryFor(RestRequest request, Uri uri)
         {
             var method = GetWebMethod(request);
             var credentials = GetWebCredentials(request);
