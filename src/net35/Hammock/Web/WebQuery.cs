@@ -794,6 +794,13 @@ namespace Hammock.Web
         {
             if (!(exception.Response is HttpWebResponse))
             {
+
+#if WindowsPhone
+                // This is probably a timeOut
+                Stream emptyStream = new MemoryStream(new byte[] { });
+                var args = new WebQueryResponseEventArgs(emptyStream, exception);
+                OnQueryResponse(args);
+#endif
                 return;
             }
 
@@ -815,8 +822,8 @@ namespace Hammock.Web
                 return;
             }
 
-            var args = new WebQueryResponseEventArgs(stream, exception);
-            OnQueryResponse(args);
+            var args2 = new WebQueryResponseEventArgs(stream, exception);
+            OnQueryResponse(args2);
         }
 
         protected abstract void SetAuthorizationHeader(WebRequest request, string header);

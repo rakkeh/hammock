@@ -181,12 +181,28 @@ namespace Hammock.Web
                 return;
             }
 
-#if !Smartphone && !WindowsPhone && !SL4 && !NETCF
-            // [DC] request.Timeout is ignored with async
-            var timeout = RequestTimeout != null ? 
+
+            var timeout = RequestTimeout != null ?
                 (int)RequestTimeout.Value.TotalMilliseconds
                 : 300000; // Default ReadWriteTimeout
 
+
+#if WindowsPhone
+            // [DS] timout handling not supported in Windows Phone so implementing
+            //      with timer.
+            var state = new Pair<WebRequest, IAsyncResult>
+            {
+                First = request,
+                Second = result
+            };
+       
+            if(this.timer==null)
+                this.timer = new Timer(TimerTimedOut, state, timeout, Timeout.Infinite);
+#endif
+
+#if !Smartphone && !WindowsPhone && !SL4 && !NETCF
+            // [DC] request.Timeout is ignored with async
+            
             var isPost = result is WebQueryAsyncResult;
             if (isPost)
             {
@@ -211,8 +227,22 @@ namespace Hammock.Web
 #endif
         }
 
+#if WindowsPhone
+        // [DS] Handler for Windows Phone timeouts.
+        int completed = 0;
+        System.Threading.Timer timer = null;
+
+        private void TimerTimedOut(object state)
+        {
+            this.timer.Change(Timeout.Infinite, Timeout.Infinite);
+            this.timer.Dispose();
+            TimedOutCallback(state, true);
+        }
+#endif
+
         private void TimedOutCallback(object state, bool timedOut)
         {
+            
             if (!timedOut)
             {
                 return;
@@ -224,6 +254,15 @@ namespace Hammock.Web
                 var request = pair.First;
                 var result = pair.Second;
 
+#if WindowsPhone
+                // Since this timeout is raised by a timer, check that
+                // reponse has not been completed yet..
+                if (Interlocked.Increment(ref completed) != 1)
+                {
+                    // We have finished so this is not actually a timeout
+                    return;
+                }
+#endif
                 TimedOut = true;
                 request.Abort();
 
@@ -297,6 +336,11 @@ namespace Hammock.Web
         
         protected virtual void GetAsyncResponseCallback(IAsyncResult asyncResult)
         {
+
+#if WindowsPhone
+            Interlocked.Increment(ref completed);
+#endif
+
             object store;
             var request = GetAsyncCacheStore(asyncResult, out store);
 
@@ -947,6 +991,10 @@ namespace Hammock.Web
 
         protected virtual void PostAsyncResponseCallback(IAsyncResult asyncResult)
         {
+#if WindowsPhone
+            Interlocked.Increment(ref completed);
+#endif
+
             WebRequest request;
             Triplet<WebRequest, Triplet<ICache, object, string>, object> state;
             try
