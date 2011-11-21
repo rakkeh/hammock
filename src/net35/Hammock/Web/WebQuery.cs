@@ -814,8 +814,8 @@ namespace Hammock.Web
                 stream = WebResponse.GetResponseStream();
             }
             
-            var args2 = new WebQueryResponseEventArgs(stream, exception);
-            OnQueryResponse(args2);
+            var args = new WebQueryResponseEventArgs(stream, exception);
+            OnQueryResponse(args);
         }
 
         protected abstract void SetAuthorizationHeader(WebRequest request, string header);
