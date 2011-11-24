@@ -1824,7 +1824,7 @@ namespace Hammock
                 return;
             }
 
-            var wasStreaming = response.Content.Equals("END STREAMING");
+            var wasStreaming = (response.Content != null && response.Content.Equals("END STREAMING"));
 
             if (callback != null && !wasStreaming)
             {
@@ -1841,7 +1841,7 @@ namespace Hammock
                 return;
             }
 
-            var wasStreaming = response.Content.Equals("END STREAMING");
+            var wasStreaming = (response.Content != null && response.Content.Equals("END STREAMING"));
 
             if (callback != null && !wasStreaming)
             {
@@ -2606,8 +2606,6 @@ namespace Hammock
             CoalesceWebPairsIntoCollection(query.Cookies, Cookies, request.Cookies);
 #pragma warning restore 618
 
-            query.Headers.AddRange(Headers);
-            query.Headers.AddRange(request.Headers);
             // If CookieContainer is set on request object then use that, else use the CookieContainer set on the Client.
             if (request.CookieContainer == null)
                 request.CookieContainer = this.CookieContainer; 

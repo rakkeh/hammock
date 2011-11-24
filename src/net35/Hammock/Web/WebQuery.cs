@@ -796,6 +796,8 @@ namespace Hammock.Web
         protected void HandleWebException(WebException exception)
         {
             Stream stream = null;
+            Stream emptyStream = new MemoryStream(new byte[] { });
+                
             if (exception.Response is HttpWebResponse)
             {
                 var response = exception.Response;
