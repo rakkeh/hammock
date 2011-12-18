@@ -166,8 +166,9 @@ namespace Hammock
         public virtual IWebQueryInfo Info { get; set; }
         public virtual string Path { get; set; }
         public virtual object Tag { get; set; }
+#if !NETCF
         public virtual CookieContainer CookieContainer { get; set; }
-
+#endif
         public virtual void AddHeader(string name, string value)
         {
             Headers.Add(name, value);

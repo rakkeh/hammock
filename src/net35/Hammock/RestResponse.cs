@@ -76,7 +76,9 @@ namespace Hammock
         public virtual NameValueCollection Headers { get; set; }
         [Obsolete("Use CookieContainer instead.")]
         public virtual NameValueCollection Cookies { get; set; }
+#if !NETCF
         public virtual CookieContainer CookieContainer { get; set; }
+#endif
         public virtual bool SkippedDueToRateLimitingRule { get; set; }
         public virtual bool IsFromCache
         {

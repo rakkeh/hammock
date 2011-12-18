@@ -2440,8 +2440,9 @@ namespace Hammock
             request = request ?? new RestRequest();
             var result = query.Result;
             var response = BuildBaseResponse(result);
-
+#if !NETCF
             response.CookieContainer = request.CookieContainer;
+#endif
             DeserializeEntityBody(request, response);
             response.Tag = GetTag(request);
 
@@ -2453,8 +2454,9 @@ namespace Hammock
             request = request ?? new RestRequest();
             var result = query.Result;
             var response = BuildBaseResponse<T>(result);
-
+#if !NETCF
             response.CookieContainer = request.CookieContainer;
+#endif
             DeserializeEntityBody(request, response);
             response.Tag = GetTag(request);
 
@@ -2606,12 +2608,13 @@ namespace Hammock
             CoalesceWebPairsIntoCollection(query.Cookies, Cookies, request.Cookies);
 #pragma warning restore 618
 
+#if !NETCF
             // If CookieContainer is set on request object then use that, else use the CookieContainer set on the Client.
             if (request.CookieContainer == null)
                 request.CookieContainer = this.CookieContainer; 
 
             query.CookieContainer = request.CookieContainer;
-
+#endif
             // [DC]: These properties are trumped by request over client
             query.UserAgent = GetUserAgent(request);
             query.Method = GetWebMethod(request);
