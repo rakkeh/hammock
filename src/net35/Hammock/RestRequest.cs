@@ -74,7 +74,7 @@ namespace Hammock
         public virtual Type ResponseEntityType { get; set; }
         public virtual Type RequestEntityType { get; set; }
 
-        public Uri BuildEndpoint(RestClient client)
+        public string BuildEndpoint(RestClient client)
         {
             var sb = new StringBuilder();
 
@@ -96,26 +96,15 @@ namespace Hammock
             }
             sb.Append(path.IsNullOrBlank() ? "" : path.StartsWith("/") ? path.Substring(1) : path);
 
-            Uri uri;
-            Uri.TryCreate(sb.ToString(), UriKind.RelativeOrAbsolute, out uri);
-
             var queryStringHandling = QueryHandling ?? client.QueryHandling ?? Hammock.QueryHandling.None;
 
             switch (queryStringHandling)
             {
                 case Hammock.QueryHandling.AppendToParameters:
-                    WebParameterCollection parameters;
-                    uri = uri.UriMinusQuery(out parameters);
-                    foreach (var parameter in parameters)
-                    {
-                        Parameters.Add(parameter);
-                    }
-                    break;
+                    return WebExtensions.UriMinusQuery(sb.ToString(), Parameters);
                 default:
-                    break;
+                    return sb.ToString();
             }
-            
-            return uri;
         }
 
         public void ExpectHeader(string name, string value)

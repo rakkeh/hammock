@@ -130,7 +130,6 @@ namespace Hammock
 
         private WebQuery RequestImpl(RestRequest request)
         {
-            Uri uri;
             WebQuery query = null;
             request = request ?? new RestRequest();
 
@@ -143,9 +142,8 @@ namespace Hammock
 
             while (_remainingRetries > 0)
             {
-                request = PrepareRequest(request, out uri, out query);
-
-                var url = uri.AbsoluteUri;
+                string url;
+                request = PrepareRequest(request, out url, out query);
 
                 if (RequestExpectsMock(request))
                 {
@@ -199,7 +197,7 @@ namespace Hammock
             return query;
         }
 
-        private RestRequest PrepareRequest(RestRequest request, out Uri uri, out WebQuery query)
+        private RestRequest PrepareRequest(RestRequest request, out string uri, out WebQuery query)
         {
             request = request ?? new RestRequest();
             uri = request.BuildEndpoint(this);
@@ -1094,10 +1092,9 @@ namespace Hammock
             if (!isInternal)
             {
                 // [DC]: Recursive call possible, only do this once
-                var uri = request.BuildEndpoint(this);
-                query = GetQueryFor(request, uri);
+                url = request.BuildEndpoint(this);
+                query = GetQueryFor(request, url);
                 SetQueryMeta(request, query);
-                url = uri.ToString();
             }
 
             if (RequestExpectsMock(request))
@@ -2695,7 +2692,7 @@ namespace Hammock
             return entity;
         }
 
-        public WebQuery GetQueryFor(RestRequest request, Uri uri)
+        public WebQuery GetQueryFor(RestRequest request, string uri)
         {
             var method = GetWebMethod(request);
             var credentials = GetWebCredentials(request);
@@ -2705,7 +2702,7 @@ namespace Hammock
             // [DC]: UserAgent is set via Info
             // [DC]: Request credentials trump client credentials
             var query = credentials != null
-                            ? credentials.GetQueryFor(uri.ToString(), request, info, method, traceEnabled)
+                            ? credentials.GetQueryFor(uri, request, info, method, traceEnabled)
                             : new BasicAuthWebQuery(info, traceEnabled);
 
             query.PostProgress += QueryPostProgress;
