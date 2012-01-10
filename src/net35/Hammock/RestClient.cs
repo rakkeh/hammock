@@ -594,7 +594,7 @@ namespace Hammock
 
         public virtual IAsyncResult BeginRequest<T>(RestRequest request, RestCallback<T> callback, object userState)
         {
-            return BeginRequestImpl(request, callback, null, null, false /* isInternal */, null);
+            return BeginRequestImpl(request, callback, null, null, false /* isInternal */, userState);
         }
 
         public IAsyncResult BeginRequest()
