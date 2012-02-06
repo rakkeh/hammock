@@ -524,8 +524,15 @@ namespace Hammock.Web
             }
             else
             {
-                request.CookieContainer = new CookieContainer();
+                // [MK] This line creates serious problems if the following two conditions are true:
+                // - Silverlight out of browser client with elevated privileges (hence going directly for the resource, bypassing clientaccesspolicy.xml and such)
+                // - There are no cookies
+                // - The remote server is down
+                // Given these conditions the Silverlight client HTTP stack throws ArgumentNullException inside
+                // HttpWebRequestHelper.ParseHeaders - go figure.
+                //request.CookieContainer = new CookieContainer();
 
+                var cookieContainer = new CookieContainer();
 #pragma warning disable 618
                 foreach (var cookie in Cookies.OfType<HttpCookieParameter>())
 #pragma warning restore 618
@@ -533,7 +540,7 @@ namespace Hammock.Web
                     var value = new Cookie(cookie.Name, cookie.Value);
                     if (cookie.Domain != null)
                     {
-                        request.CookieContainer.Add(cookie.Domain, value);
+                        cookieContainer.Add(cookie.Domain, value);
                     }
 #if !SILVERLIGHT
                     else
@@ -541,6 +548,11 @@ namespace Hammock.Web
                         request.CookieContainer.Add(value);
                     }
 #endif
+                }
+
+                if (cookieContainer.Count > 0)
+                {
+                    request.CookieContainer = cookieContainer;
                 }
             }
 #endif
