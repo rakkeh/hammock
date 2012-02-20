@@ -37,8 +37,9 @@ namespace Hammock.Web
         public virtual WebParameterCollection Parameters { get; protected set; }
         [Obsolete("Use CookieContainer instead.")]
         public virtual WebParameterCollection Cookies { get; protected set; }
+#if !NETCF
         public virtual CookieContainer CookieContainer { get; set; }
-
+#endif
         private WebEntity _entity;
         protected internal virtual WebEntity Entity
         {
