@@ -138,6 +138,9 @@
     <Compile Include="..\..\net35\Hammock\Authentication\OAuth\OAuthWorkflow.cs">
       <Link>Authentication\OAuth\OAuthWorkflow.cs</Link>
     </Compile>
+    <Compile Include="..\..\net35\Hammock\Authentication\Windows\WindowsAuthCredentials.cs">
+      <Link>Authentication\Windows\WindowsAuthCredentials.cs</Link>
+    </Compile>
     <Compile Include="..\..\net35\Hammock\Caching\AspNetCache.cs">
       <Link>Caching\AspNetCache.cs</Link>
     </Compile>
@@ -404,6 +407,9 @@
     </Compile>
     <Compile Include="..\..\net35\Hammock\RestResponse.cs">
       <Link>RestResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\..\net35\Hammock\Web\WindowsAuthWebQuery.cs">
+      <Link>Web\WindowsAuthWebQuery.cs</Link>
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Mono\HttpUtility.cs" />

@@ -97,6 +97,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Authentication\IWebCredentials.cs" />
+    <Compile Include="Authentication\Windows\WindowsAuthCredentials.cs" />
+    <Compile Include="Web\WindowsAuthWebQuery.cs" />
     <Compile Include="Extensions\OAuthExtensions.cs" />
     <Compile Include="Mono\HttpUtility.cs" />
     <Compile Include="Mono\WebHeaderCollection.cs" />
