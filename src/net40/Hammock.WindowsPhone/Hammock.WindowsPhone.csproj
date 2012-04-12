@@ -23,7 +23,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\bin\lib\WP7\</OutputPath>
+    <OutputPath>..\..\..\bin\lib\sl4-wp\</OutputPath>
     <DefineConstants>TRACE;DEBUG;SILVERLIGHT,Silverlight,WindowsPhone</DefineConstants>
     <NoStdLib>true</NoStdLib>
     <NoConfig>true</NoConfig>
