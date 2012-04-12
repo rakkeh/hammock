@@ -1143,7 +1143,7 @@ namespace Hammock
                        callback,
                        userState);
 
-                asyncResult = beginRequest.Invoke();
+                asyncResult = beginRequest();
             }
 
             if (isInternal || (request.TaskOptions == null || request.TaskOptions.RepeatInterval.TotalMilliseconds == 0))
@@ -2320,7 +2320,7 @@ namespace Hammock
         private bool BeginRequestMultiPart(RestBase request, WebQuery query, string url, out WebQueryAsyncResult result, object userState)
         {
             var parameters = GetPostParameters(request);
-            if (parameters == null || parameters.Count() == 0)
+            if (!parameters.Any())
             {
                 result = null;
                 return false;
@@ -2474,7 +2474,7 @@ namespace Hammock
         }
 #endif
 
-        private static readonly Func<RestResponseBase, WebQueryResult, RestResponseBase> _baseSetter =
+        private static readonly Func<RestResponseBase, WebQueryResult, RestResponseBase> BaseSetter =
                 (response, result) =>
                 {
                     response.ContentStream = result.ContentStream;
@@ -2533,7 +2533,7 @@ namespace Hammock
         {
             var response = new RestResponse();
 
-            _baseSetter.Invoke(response, result);
+            BaseSetter.Invoke(response, result);
 
             return response;
         }
@@ -2542,7 +2542,7 @@ namespace Hammock
         {
             var response = new RestResponse<T>();
 
-            _baseSetter.Invoke(response, result);
+            BaseSetter.Invoke(response, result);
 
             return response;
         }
