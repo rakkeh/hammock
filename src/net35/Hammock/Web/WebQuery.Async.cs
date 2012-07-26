@@ -341,6 +341,8 @@ namespace Hammock.Web
             Interlocked.Increment(ref completed);
 #endif
 
+            Console.Out.WriteLine("----- WebQuery.Async.cs GetAsyncResponseCallback");
+
             object store;
             var request = GetAsyncCacheStore(asyncResult, out store);
 
@@ -530,86 +532,141 @@ namespace Hammock.Web
                                WebRequest request, WebResponse response,
                                TimeSpan duration, int resultCount)
         {
+            Console.Out.WriteLine("----- StreamImpl -----");
 
-            using (stream = response.GetResponseStream())
+            try
             {
-                if (stream == null)
+                using (stream = response.GetResponseStream())
                 {
-                    return;
-                }
-
-                NewStreamMessageEvent += WebQueryNewStreamMessageEvent;
-
-                _isStreaming = true;
-
-                var count = 0;
-                var results = new List<string>();
-                var start = DateTime.UtcNow;
-                var bufferString = string.Empty;
-                var data = new byte[4096];
-
-                try
-                {
-                    int read;
-                    while (stream.CanRead && (read = stream.Read(data, 0, data.Length)) > 0)
+                    if (stream == null)
                     {
-                        var readString = Encoding.UTF8.GetString(data, 0, read);
-                        bufferString = ProcessBuffer(bufferString + readString);
-                        if (!_isStreaming)
-                        {
-                            // [DC] Streaming was cancelled out of band
-                            return;
-                        }
-
-                        if (readString.Equals(Environment.NewLine))
-                        {
-                            // Keep-Alive
-                            continue;
-                        }
-
-                        if (readString.Equals("<html>"))
-                        {
-                            // We're looking at a 401 or similar; construct error result?
-                            return;
-                        }
-
-                        results.Add(readString);
-
-                        count++;
-                        if (count < resultCount)
-                        {
-                            // Result buffer
-                            continue;
-                        }
-
-                        var sb = new StringBuilder();
-                        foreach (var result in results)
-                        {
-                            sb.AppendLine(result);
-                        }
-
-                        results.Clear();
-
-                        count = 0;
-
-                        var now = DateTime.UtcNow;
-
-                        if (duration == new TimeSpan() || now.Subtract(start) < duration)
-                        {
-                            continue;
-                        }
-
-                        // Time elapsed
+                        Console.Out.WriteLine("stream is null");
                         return;
                     }
+
+                    NewStreamMessageEvent += WebQueryNewStreamMessageEvent;
+
+                    _isStreaming = true;
+
+//                    var count = 0;
+//                    var results = new List<string>();
+//                    var start = DateTime.UtcNow;
+//                    var bufferString = string.Empty;
+//                    var data = new byte[4096];
+
+                    try
+                    {
+                        int byteAsInt = 0;
+                        var messageBuilder = new StringBuilder();
+                        var decoder = Encoding.UTF8.GetDecoder();
+                        var nextChar = new char[1];
+
+                        while ((byteAsInt = stream.ReadByte()) != -1)
+                        {
+                            var charCount = decoder.GetChars(new[] {(byte) byteAsInt}, 0, 1, nextChar, 0);
+                            if(charCount == 0) continue;
+
+                            Console.Write(nextChar[0]);
+                            messageBuilder.Append(nextChar);
+
+                            if (nextChar[0] == '\r')
+                            {
+                                ProcessBuffer(messageBuilder.ToString());
+                                messageBuilder.Clear();
+                            }
+                        }
+
+//                        using(var reader = new StreamReader(stream, Encoding.UTF8))
+//                        {
+//                            var messageBuilder = new StringBuilder();
+//                            var nextChar = new char[1];
+//                            while (reader.Read(nextChar, 0, 1) > 0)
+//                            {
+//                                Console.Write(nextChar[0]);
+//                                messageBuilder.Append(nextChar);
+//
+//                                if (nextChar[0] == '\r')
+//                                {
+//                                    ProcessBuffer(messageBuilder.ToString());
+//                                    messageBuilder.Clear();
+//                                }
+//                            }
+//                        }
+
+//                        Console.Out.WriteLine("----- Begining while loop -----");
+//                        while (stream.CanRead && (read = stream.Read(data, 0, data.Length)) > 0)
+//                        {
+//                            var readString = Encoding.UTF8.GetString(data, 0, read);
+//                            bufferString = ProcessBuffer(bufferString + readString);
+//                            if (!_isStreaming)
+//                            {
+//                                // [DC] Streaming was cancelled out of band
+//                                Console.Out.WriteLine("----- Streaming Cancelled out of band -----");
+//                                return;
+//                            }
+//
+//                            if (readString.Equals(Environment.NewLine))
+//                            {
+//                                // Keep-Alive
+//                                continue;
+//                            }
+//
+//                            if (readString.Equals("<html>"))
+//                            {
+//                                // We're looking at a 401 or similar; construct error result?
+//                                Console.Out.WriteLine("----- HTML Detected, end streaming -----");
+//                                return;
+//                            }
+//
+//                            results.Add(readString);
+//
+//                            count++;
+//                            if (count < resultCount)
+//                            {
+//                                // Result buffer
+//                                continue;
+//                            }
+//
+//                            Console.Out.WriteLine("----- count exceeds resultsCount -----");
+//
+//                            var sb = new StringBuilder();
+//                            foreach (var result in results)
+//                            {
+//                                sb.AppendLine(result);
+//                            }
+//
+//                            results.Clear();
+//
+//                            count = 0;
+//
+//                            var now = DateTime.UtcNow;
+//
+//                            if (duration == new TimeSpan() || now.Subtract(start) < duration)
+//                            {
+//                                continue;
+//                            }
+//
+//                            Console.Out.WriteLine("----- Timeout -----");
+//
+//                            // Time elapsed
+//                            return;
+//                        }
+                    }
+                    catch(Exception exception)
+                    {
+                        Console.Out.WriteLine("----- Exception in StreamImpl -----\n{0}", exception.ToString());
+                    }
+                    finally
+                    {
+                        Console.Out.WriteLine("----- Ending streaming -----");
+                        EndStreaming(request);
+                    }
                 }
-                catch
-                {
-                }
-                finally
-                {
-                    EndStreaming(request);
-                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("----- outter exception handler -----\n{0}", e);
+                stream = null;
             }
         }
 
@@ -624,12 +681,17 @@ namespace Hammock.Web
 
         private string ProcessBuffer(string bufferString)
         {
+            Console.Out.WriteLine("bufferString = '{0}'", bufferString);
+
             var buffer = bufferString;
             var position = buffer.IndexOf(StreamResultDelimiter);
 
             while (position >= 0)
             {
                 string message = buffer.Substring(0, position).Replace(StreamResultDelimiter.ToString(),"");
+
+                Console.Out.WriteLine("----- New Message -----");
+                
                 var messageBytes = Encoding.UTF8.GetBytes(message);
 
                 buffer = buffer.Length <= position + 1 ?
