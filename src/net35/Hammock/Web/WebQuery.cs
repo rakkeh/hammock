@@ -985,6 +985,7 @@ namespace Hammock.Web
         public virtual event EventHandler<WebQueryResponseEventArgs> QueryResponse;
         public virtual void OnQueryResponse(WebQueryResponseEventArgs args)
         {
+            Console.Out.WriteLine("----- OnQueryResponse");
             var handler = QueryResponse;
             if (handler != null)
             {

@@ -341,6 +341,8 @@ namespace Hammock.Web
             Interlocked.Increment(ref completed);
 #endif
 
+            Console.Out.WriteLine("----- WebQuery.Async.cs GetAsyncResponseCallback");
+
             object store;
             var request = GetAsyncCacheStore(asyncResult, out store);
 
@@ -530,84 +532,41 @@ namespace Hammock.Web
                                WebRequest request, WebResponse response,
                                TimeSpan duration, int resultCount)
         {
-
             using (stream = response.GetResponseStream())
             {
                 if (stream == null)
                 {
-                    return;
+                    throw new ApplicationException("No stream returned from streaming request");
                 }
 
                 NewStreamMessageEvent += WebQueryNewStreamMessageEvent;
 
                 _isStreaming = true;
 
-                var count = 0;
-                var results = new List<string>();
-                var start = DateTime.UtcNow;
-                var bufferString = string.Empty;
-                var data = new byte[4096];
-
                 try
                 {
-                    int read;
-                    while (stream.CanRead && (read = stream.Read(data, 0, data.Length)) > 0)
+                    int byteAsInt = 0;
+                    var messageBuilder = new StringBuilder();
+                    var decoder = Encoding.UTF8.GetDecoder();
+                    var nextChar = new char[1];
+
+                    while ((byteAsInt = stream.ReadByte()) != -1)
                     {
-                        var readString = Encoding.UTF8.GetString(data, 0, read);
-                        bufferString = ProcessBuffer(bufferString + readString);
-                        if (!_isStreaming)
+                        var charCount = decoder.GetChars(new[] {(byte) byteAsInt}, 0, 1, nextChar, 0);
+                        if(charCount == 0) continue;
+
+                        messageBuilder.Append(nextChar);
+
+                        if (nextChar[0] == streamResultDelimiter)
                         {
-                            // [DC] Streaming was cancelled out of band
-                            return;
+                            ProcessBuffer(messageBuilder.ToString());
+                            messageBuilder.Clear();
                         }
-
-                        if (readString.Equals(Environment.NewLine))
-                        {
-                            // Keep-Alive
-                            continue;
-                        }
-
-                        if (readString.Equals("<html>"))
-                        {
-                            // We're looking at a 401 or similar; construct error result?
-                            return;
-                        }
-
-                        results.Add(readString);
-
-                        count++;
-                        if (count < resultCount)
-                        {
-                            // Result buffer
-                            continue;
-                        }
-
-                        var sb = new StringBuilder();
-                        foreach (var result in results)
-                        {
-                            sb.AppendLine(result);
-                        }
-
-                        results.Clear();
-
-                        count = 0;
-
-                        var now = DateTime.UtcNow;
-
-                        if (duration == new TimeSpan() || now.Subtract(start) < duration)
-                        {
-                            continue;
-                        }
-
-                        // Time elapsed
-                        return;
                     }
-                }
-                catch
-                {
                 }
                 finally
                 {
+                    Console.Out.WriteLine("----- Ending streaming -----");
                     EndStreaming(request);
                 }
             }
@@ -620,16 +579,17 @@ namespace Hammock.Web
         }
 
         // TODO make part of StreamOptions
-        private const char StreamResultDelimiter = '\r';
+        private const char streamResultDelimiter = '\r';
 
-        private string ProcessBuffer(string bufferString)
+        private void ProcessBuffer(string bufferString)
         {
             var buffer = bufferString;
-            var position = buffer.IndexOf(StreamResultDelimiter);
+            var position = buffer.IndexOf(streamResultDelimiter);
 
             while (position >= 0)
             {
-                string message = buffer.Substring(0, position).Replace(StreamResultDelimiter.ToString(),"");
+                string message = buffer.Substring(0, position).Replace(streamResultDelimiter.ToString(),"");
+
                 var messageBytes = Encoding.UTF8.GetBytes(message);
 
                 buffer = buffer.Length <= position + 1 ?
@@ -640,10 +600,8 @@ namespace Hammock.Web
                     NewStreamMessageEvent(new MemoryStream(messageBytes));
                 }
 
-                position = buffer.IndexOf(StreamResultDelimiter);
+                position = buffer.IndexOf(streamResultDelimiter);
             }
-
-            return buffer;
         }
 
         private void EndStreaming(WebRequest request)
