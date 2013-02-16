@@ -2448,8 +2448,6 @@ namespace Hammock
 
         private RestResponse<T> BuildResponseFromResult<T>(RestRequest request, WebQuery query)
         {
-            // never gets here
-            Console.Out.WriteLine("----- BuildResponseFromResult");
             request = request ?? new RestRequest();
             var result = query.Result;
             var response = BuildBaseResponse<T>(result);

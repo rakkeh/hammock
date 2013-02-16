@@ -506,7 +506,7 @@ namespace Hammock.Web
                         response = new GzipHttpWebResponse((HttpWebResponse)response);
                     }
 #endif
-                    StreamImpl(out stream, request, response, duration, resultCount);
+                    StreamImpl(out stream, request, response);
                 }
             }
             catch (WebException ex)
@@ -528,15 +528,13 @@ namespace Hammock.Web
         public delegate void NewStreamMessage(Stream message);
         public event NewStreamMessage NewStreamMessageEvent;
 
-        private void StreamImpl(out Stream stream,
-                               WebRequest request, WebResponse response,
-                               TimeSpan duration, int resultCount)
+        private void StreamImpl(out Stream stream, WebRequest request, WebResponse response)
         {
             using (stream = response.GetResponseStream())
             {
                 if (stream == null)
                 {
-                    throw new ApplicationException("No stream returned from streaming request");
+                    throw new Exception("No stream returned from streaming request");
                 }
 
                 NewStreamMessageEvent += WebQueryNewStreamMessageEvent;
@@ -560,13 +558,16 @@ namespace Hammock.Web
                         if (nextChar[0] == streamResultDelimiter)
                         {
                             ProcessBuffer(messageBuilder.ToString());
+#if NET40
                             messageBuilder.Clear();
+#else
+                            messageBuilder = new StringBuilder(); // No .Clear() method
+#endif
                         }
                     }
                 }
                 finally
                 {
-                    Console.Out.WriteLine("----- Ending streaming -----");
                     EndStreaming(request);
                 }
             }

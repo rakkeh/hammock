@@ -14,15 +14,13 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ICSharpCode.SharpZipLib.Silverlight</RootNamespace>
     <AssemblyName>ICSharpCode.SharpZipLib.Silverlight</AssemblyName>
-    <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
     <SilverlightApplication>false</SilverlightApplication>
     <ValidateXaml>true</ValidateXaml>
     <ThrowErrorsInValidation>false</ThrowErrorsInValidation>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
+    <FileUpgradeFlags>40</FileUpgradeFlags>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <UpgradeBackupLocation>C:\Users\Daniel\Desktop\src\hammock\src\Backup\net35\ICSharpCode.SharpZipLib.Silverlight\</UpgradeBackupLocation>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
