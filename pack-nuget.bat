@@ -1,2 +1,3 @@
-copy LICENSE bin
-..\NuGet.exe pack hammock.nuspec -b bin -o bin
+copy LICENSE.md bin
+copy README.md bin
+".nuget\NuGet.exe" pack hammock.nuspec -BasePath bin

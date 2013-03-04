@@ -12,9 +12,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		net35\BuildWindowsAndRunTests.proj = net35\BuildWindowsAndRunTests.proj
 		..\clean.bat = ..\clean.bat
 		..\hammock.nuspec = ..\hammock.nuspec
-		..\LICENSE = ..\LICENSE
+		..\LICENSE.md = ..\LICENSE.md
 		..\pack-nuget.bat = ..\pack-nuget.bat
-		..\README.markdown = ..\README.markdown
+		..\push-nuget.bat = ..\push-nuget.bat
+		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hammock", "net35\Hammock\Hammock.csproj", "{6679078A-C585-4CB6-96E9-908DBDAA2716}"
