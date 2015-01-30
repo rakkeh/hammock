@@ -1765,7 +1765,7 @@ namespace Hammock
                 return;
             }
 
-            var wasStreaming = response.Content.Equals(EndStreamingContent);
+            var wasStreaming = (response.Content != null && response.Content.Equals(EndStreamingContent));
 
             result.AsyncState = response;
             result.IsCompleted = true;
@@ -1794,7 +1794,7 @@ namespace Hammock
                 return;
             }
 
-            var wasStreaming = response.Content.Equals(EndStreamingContent);
+            var wasStreaming = (response.Content != null && response.Content.Equals(EndStreamingContent));
 
             result.AsyncState = response;
             result.IsCompleted = true;
