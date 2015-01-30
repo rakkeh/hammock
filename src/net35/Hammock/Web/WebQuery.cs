@@ -1329,7 +1329,7 @@ namespace Hammock.Web
                 }
             }
 
-            written += Write(write, encoding, requestStream, footer);
+            written += WriteLine(write, encoding, requestStream, footer);
 #if TRACE
             if(write)
             {
