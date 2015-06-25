@@ -20,6 +20,7 @@ namespace Hammock.Authentication.OAuth
         private const string Digit = "1234567890";
         private const string Lower = "abcdefghijklmnopqrstuvwxyz";
         private const string Unreserved = AlphaNumeric + "-._~";
+        private const string NonEncodedChars = Unreserved + "%";
         private const string Upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         private static readonly Random _random;
@@ -116,15 +117,15 @@ namespace Hammock.Authentication.OAuth
         /// <seealso cref="http://oauth.net/core/1.0#encoding_parameters" />
         public static string UrlEncodeStrict(string value)
         {
-            // [JD]: We need to escape the apostrophe as well or the signature will fail
-            var original = value;
-            var ret = original.Where(
-                c => !Unreserved.Contains(c) && c != '%').Aggregate(
-                    value, (current, c) => current.Replace(
-                          c.ToString(), c.ToString().PercentEncode()
-                          ));
+            // [DS]: support characters from UTF32, relaxed already does this correctly as it uses `Uri.EscapeDataString`
+            string output = "";
+            for (int i = 0; i < value.Length; i++)
+            {
+                string toEncode = char.IsHighSurrogate(value, i) ? char.ConvertFromUtf32(char.ConvertToUtf32(value, i++)) : value[i].ToString();
+                output += !NonEncodedChars.Contains(toEncode) ? toEncode.PercentEncode() : toEncode;
+            }
 
-            return ret.Replace("%%", "%25%"); // Revisit to encode actual %'s
+            return output.Replace("%%", "%25%"); // Revisit to encode actual %'s
         }
 
         /// <summary>
