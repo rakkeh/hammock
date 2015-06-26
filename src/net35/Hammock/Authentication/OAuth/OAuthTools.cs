@@ -16,11 +16,11 @@ namespace Hammock.Authentication.OAuth
 #endif
     public static class OAuthTools
     {
+        private const string Hex = "0123456789ABCDEFabcdef";
         private const string AlphaNumeric = Upper + Lower + Digit;
         private const string Digit = "1234567890";
         private const string Lower = "abcdefghijklmnopqrstuvwxyz";
         private const string Unreserved = AlphaNumeric + "-._~";
-        private const string NonEncodedChars = Unreserved + "%";
         private const string Upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         private static readonly Random _random;
@@ -122,10 +122,22 @@ namespace Hammock.Authentication.OAuth
             for (int i = 0; i < value.Length; i++)
             {
                 string toEncode = char.IsHighSurrogate(value, i) ? char.ConvertFromUtf32(char.ConvertToUtf32(value, i++)) : value[i].ToString();
-                output += !NonEncodedChars.Contains(toEncode) ? toEncode.PercentEncode() : toEncode;
+                if (toEncode == "%" && (value.Length - 2) > i && Hex.Contains(value[i + 1]) && Hex.Contains(value[i + 2]))
+                {
+                    output += toEncode + value[i + 1] + value[i + 2];
+                    i += 2;
+                }
+                else if (!Unreserved.Contains(toEncode))
+                {
+                    output += toEncode.PercentEncode();
+                }
+                else
+                {
+                    output += toEncode;
+                }
             }
 
-            return output.Replace("%%", "%25%"); // Revisit to encode actual %'s
+            return output;
         }
 
         /// <summary>

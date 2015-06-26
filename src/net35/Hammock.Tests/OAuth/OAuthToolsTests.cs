@@ -220,8 +220,8 @@ namespace Hammock.Tests.OAuth
         [Test]
         public void Can_strict_url_encode_complex_string()
         {
-            const string expected = "123AaBb%21%3F%22%3B%3A%3C%3E%5C%5C%7C%60%23%24%25%5E%26%2A%2B-_%7B%7D%5B%5D%F0%9F%98%83";
-            const string sequence = @"123AaBb!?"";:<>\\|`#$%^&*+-_{}[]😃";
+            const string expected = "123AaBb%21%3F%22%3B%3A%3C%3E%5C%5C%7C%60%23%24%25%20%25A%5E%26%2A%2B-_%7B%7D%5B%5D%F0%9F%98%83";
+            const string sequence = @"123AaBb!?"";:<>\\|`#$% %A^&*+-_{}[]😃";
 
             var actual = OAuthTools.UrlEncodeStrict(sequence);
             Assert.AreEqual(expected, actual);
@@ -230,8 +230,8 @@ namespace Hammock.Tests.OAuth
         [Test]
         public void Can_strict_prevent_double_encoding()
         {
-            const string expected = "123AaBb%21%3F%22%3B%3A%3C%3E%5C%5C%7C%60%23%24%25%5E%26%2A%2B-_%7B%7D%5B%5D%F0%9F%98%83";
-            const string sequence = @"123AaBb!?"";:<>\\|`#$%^&*+-_{}[]😃";
+            const string expected = "123AaBb%21%3F%22%3B%3A%3C%3E%5C%5C%7C%60%23%24%25%20%25A%5E%26%2A%2B-_%7B%7D%5B%5D%F0%9F%98%83";
+            const string sequence = @"123AaBb!?"";:<>\\|`#$% %A^&*+-_{}[]😃";
 
             var actual = OAuthTools.UrlEncodeStrict(sequence);
             actual = OAuthTools.UrlEncodeStrict(actual);
@@ -242,8 +242,8 @@ namespace Hammock.Tests.OAuth
         public void Can_relax_url_encode_complex_string()
         {
             // Doesn't URL encode ! or * in this sequence
-            const string expected = "!%3F%22%3B%3A%3C%3E%5C%5C%7C%60%23%24%25%5E%26*%2B-_%7B%7D%5B%5D%F0%9F%98%83";
-            const string sequence = @"!?"";:<>\\|`#$%^&*+-_{}[]😃";
+            const string expected = "!%3F%22%3B%3A%3C%3E%5C%5C%7C%60%23%24%25%20%25A%5E%26*%2B-_%7B%7D%5B%5D%F0%9F%98%83";
+            const string sequence = @"!?"";:<>\\|`#$% %A^&*+-_{}[]😃";
 
             var actual = OAuthTools.UrlEncodeRelaxed(sequence);
             Assert.AreEqual(expected, actual);
